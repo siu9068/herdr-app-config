@@ -7,7 +7,7 @@ import { focused, openOverlay, closeOverlay, props, theme, run } from "herdr";
 
 const CHOICES = [
   { name: "Claude", argv: ["claude", "--dangerously-skip-permissions"] },
-  { name: "Codex", argv: ["codex", "--yolo"] },
+  { name: "Codex", argv: ["codex", "--no-daemon", "--yolo"] },
   { name: "Shell", argv: null },
 ];
 

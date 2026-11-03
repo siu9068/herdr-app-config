@@ -36,7 +36,7 @@
 선택지마다 실행하는 명령은 아래와 같습니다.
 
 - Claude: `claude --dangerously-skip-permissions`
-- Codex: `codex --yolo`
+- Codex: `codex --no-daemon --yolo`. `--no-daemon`이 있어야 Codex 명령이 herdr 터미널 안에서 실행되고 `hc send` 같은 협업 명령이 동작합니다.
 - Shell: 에이전트 없이 기본 셸
 
 선택 창에서는 `1`~`3`을 누르거나 `↑↓`로 고른 뒤 `↵`를 누릅니다. 클릭해도 됩니다. `esc`를 누르면 닫힙니다. 마지막에 고른 항목은 키마다 따로 기억합니다.
@@ -72,7 +72,7 @@
 ### 알아 둘 점
 
 - `cmd-d`, `cmd-shift-d`의 기본 동작(바로 분할)을 선택 창으로 바꿉니다. 아무것도 띄우지 않고 분할하려면 선택 창에서 `3`(Shell)을 고르면 됩니다.
-- `claude --dangerously-skip-permissions`와 `codex --yolo`는 권한 확인 없이 명령을 실행합니다.
+- `claude --dangerously-skip-permissions`와 `codex --no-daemon --yolo`는 권한 확인 없이 명령을 실행합니다.
 - Limits 패널(`agent-limits`)은 macOS Keychain에서 Claude Code 로그인 토큰을 읽어 `https://api.anthropic.com/api/oauth/usage`에 보내고, `codex app-server`를 잠깐 실행해 Codex 사용량을 읽습니다. 캐시는 `~/.cache/agent-limits/`에 씁니다.
 - 원래 레이아웃으로 돌아가려면 `cmd-shift-l`로 레이아웃을 바꾸면 됩니다. `main`은 그대로 남아 있습니다.
 
