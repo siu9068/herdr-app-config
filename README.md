@@ -2,14 +2,42 @@
 
 [Herdr](https://herdr.dev) 데스크톱 앱(`herdr-app`)에 추가한 mod와 단축키 모음입니다. herdr-app 0.1.12에서 만들고 확인했습니다.
 
-- 사이드바 Agents 목록 아래에 Claude와 Codex 사용량(5h, 7d)을 보여주는 Limits 패널이 생깁니다.
-- 새 worktree(`cmd-shift-n`)와 화면 분할(`cmd-d`, `cmd-shift-d`)을 할 때 Claude, Codex, Shell 중 무엇을 띄울지 고르는 창이 뜹니다.
+## 기능
+
+### Claude, Codex 사용량 패널
+
+![Limits 패널](docs/limits.png)
+
+사이드바 Agents 목록 바로 아래에 Limits 패널이 붙습니다. 에이전트마다 한 줄씩, 짧은 한도(5h)와 긴 한도(7d)를 막대와 퍼센트로 보여줍니다. 플랜에 5h 한도가 없으면 그 칸은 비어 있습니다.
+
+- 70% 이상이면 주황, 90% 이상이면 빨강으로 바뀝니다.
+- 줄에 마우스를 올리면 각 한도가 리셋되는 시각과 마지막 갱신 시각이 나옵니다.
+- 로컬 기록은 30초마다, Anthropic과 OpenAI 서버는 5분마다 확인합니다. 오른쪽 위 새로고침 아이콘을 누르면 바로 다시 확인합니다.
+- 지금 실행 중이 아닌 에이전트는 흐리게 보입니다.
+
+### 새 worktree를 만들 때 에이전트 고르기
+
+![New worktree 선택 창](docs/agent-worktree.png)
+
+`cmd-shift-n`을 누르면 새 worktree에서 무엇을 띄울지 먼저 묻습니다. 고르고 나면 Herdr 기본 New worktree 다이얼로그가 열리고, 브랜치 이름을 입력하면 새 스페이스가 만들어지면서 고른 에이전트가 바로 실행됩니다. 스페이스 메뉴의 "New worktree"와 같은 다이얼로그이고, 지금 보고 있는 스페이스의 저장소를 기준으로 합니다.
+
+### 화면을 나눌 때 에이전트 고르기
+
+![Split 선택 창](docs/agent-split.png)
+
+`cmd-d`(오른쪽), `cmd-shift-d`(아래)로 pane을 나눌 때도 같은 창이 뜹니다. 키를 누를 때 포커스가 있던 pane 옆에 새 pane이 열리고 고른 에이전트가 실행됩니다. 그냥 셸만 열려면 Shell을 고르면 됩니다.
 
 | 키 | 동작 | 선택지 |
 | --- | --- | --- |
 | `cmd-shift-n` | 지금 스페이스의 저장소로 새 worktree 만들기 | Claude, Codex, Shell |
 | `cmd-d` | 오른쪽으로 분할 | Claude, Codex, Shell |
 | `cmd-shift-d` | 아래로 분할 | Claude, Codex, Shell |
+
+선택지마다 실행하는 명령은 아래와 같습니다.
+
+- Claude: `claude --dangerously-skip-permissions`
+- Codex: `codex --yolo`
+- Shell: 에이전트 없이 기본 셸
 
 선택 창에서는 `1`~`3`을 누르거나 `↑↓`로 고른 뒤 `↵`를 누릅니다. 클릭해도 됩니다. `esc`를 누르면 닫힙니다. 마지막에 고른 항목은 키마다 따로 기억합니다.
 
