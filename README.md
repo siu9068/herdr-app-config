@@ -92,7 +92,7 @@ hc wait --children any
 ```
 
 - Give an absolute output path. Never let it overwrite an input image.
-- If the launch JSON has `first_message.sent: false`, run `hc read image`; a Codex folder trust dialog may need `hc keys image enter`, then send the task again with `hc send image "<task>"`.
+- If the launch JSON has `first_message.sent: false`, run `hc read image` and clear the dialog: "Trust this folder?" takes `hc keys image enter`; "Hooks need review" takes `hc keys image down down enter` (Continue without trusting). Once it is idle, send the template body plus the task with `hc send image "<task>"`, since the first message was lost.
 - When the report arrives, open the saved file with Read to check it before using it.
 - Outside herdr (`$HC_TERMINAL_ID` unset), say that image generation needs Codex in herdr instead of drawing it with code.
 - Diagrams, charts and SVG built from code are not image work; do those yourself.
