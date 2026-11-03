@@ -43,13 +43,14 @@
 
 ### Claude와 Codex 협업 템플릿
 
-herdr-core(`hc`) 템플릿 세 개입니다. 한 에이전트가 다른 에이전트를 자식으로 띄워 일을 맡기고, 자식은 끝나면 `hc send`로 결과를 부모에게 보냅니다.
+herdr-core(`hc`) 템플릿 네 개입니다. 한 에이전트가 다른 에이전트를 자식으로 띄워 일을 맡기고, 자식은 끝나면 `hc send`로 결과를 부모에게 보냅니다.
 
 | 템플릿 | 실행 명령 | 역할 |
 | --- | --- | --- |
 | `codex-reviewer` | `codex --no-daemon --yolo` | 읽기 전용 리뷰. 범위가 없으면 `git diff HEAD`를 봅니다. |
 | `codex-worker` | `codex --no-daemon --yolo` | 정해진 작업 하나를 구현하고 바꾼 파일과 검증 결과를 보고합니다. |
 | `claude-reviewer` | `claude --dangerously-skip-permissions` | Codex가 리더일 때 쓰는 읽기 전용 리뷰. |
+| `codex-image` | `codex --no-daemon --yolo` | Codex 내장 이미지 생성과 편집. 지정한 경로에 저장하고 원본은 덮어쓰지 않습니다. 저장 경로와 픽셀 크기를 보고합니다. |
 
 템플릿은 `~/.config/herdr-core/templates/<이름>.md` 파일 하나입니다. 위쪽 frontmatter에 `name`, `description`, `command`가 있고, 본문은 에이전트에게 줄 규칙입니다. `hc run <이름> "<작업>"`을 실행하면 `command`로 에이전트를 띄우고, 본문과 작업을 합친 내용을 첫 메시지로 보냅니다.
 
@@ -75,6 +76,36 @@ Claude가 실행하는 명령은 아래와 같고, 보고는 `<hc from="t16 revi
 hc run --bg --name review --cwd "$PWD" codex-reviewer "Scope: src/x.ts"
 hc wait --children any
 ```
+
+### 이미지 작업을 Codex에 자동으로 넘기기
+
+`~/.claude/CLAUDE.md`에 아래 규칙을 넣어 두면, herdr 안에서 Claude에게 이미지 생성이나 편집을 시켰을 때 Claude가 직접 그리지 않고 `codex-image`로 Codex에 맡깁니다. 결과 파일은 Claude가 열어서 확인한 뒤 씁니다. CLAUDE.md는 개인 설정 파일이라 `install.sh`가 건드리지 않으니 직접 붙여 넣어야 합니다.
+
+````markdown
+## Image work goes to Codex
+
+When `$HC_TERMINAL_ID` is set (running inside herdr), do not generate or edit raster images yourself. Delegate to Codex with the `codex-image` template:
+
+```sh
+hc run --bg --name image --cwd "$PWD" codex-image "<what to make or change, input file paths, output path>"
+hc wait --children any
+```
+
+- Give an absolute output path. Never let it overwrite an input image.
+- If the launch JSON has `first_message.sent: false`, run `hc read image`; a Codex folder trust dialog may need `hc keys image enter`, then send the task again with `hc send image "<task>"`.
+- When the report arrives, open the saved file with Read to check it before using it.
+- Outside herdr (`$HC_TERMINAL_ID` unset), say that image generation needs Codex in herdr instead of drawing it with code.
+- Diagrams, charts and SVG built from code are not image work; do those yourself.
+````
+
+Claude에게는 평소처럼 말하면 됩니다.
+
+```
+public/og.png로 1200x630 OG 이미지 만들어줘. 초록 톤, 가운데에 서비스 이름
+assets/hero.jpg 배경만 흰색으로 바꿔서 assets/hero-white.jpg로 저장해줘
+```
+
+결과를 어디에 둘지 경로를 말해 주면 그대로 저장되고, 말하지 않으면 `./generated-images/`에 저장됩니다.
 
 - `hc templates`를 실행하면 설치된 템플릿 목록이 나옵니다.
 - Codex가 어떤 폴더를 처음 열면 "Trust this folder?" 확인 창이 떠서 첫 메시지가 전달되지 않습니다. 이때는 `hc read <이름>`으로 화면을 확인하고 `hc keys <이름> enter`로 승인한 다음 작업을 다시 보내면 됩니다. 한 번 승인한 폴더에서는 다시 뜨지 않습니다.
@@ -105,7 +136,7 @@ hc wait --children any
 1. `mods/` 아래 mod 네 개를 먼저 `herdr-app check`로 검사하고, 모두 통과하면 `~/.config/herdr-app/mods/`에 복사합니다. 같은 이름의 mod가 있으면 이 저장소 것으로 바꿉니다. 하나라도 검사에 실패하면 아무것도 바꾸지 않고 멈춥니다.
 2. `keys.json`의 단축키 세 개를 `~/.config/herdr-app/keys.json`에 합칩니다. 원래 파일은 `keys.json.bak`으로 남습니다.
 3. 설치된 버전의 기본 레이아웃 `main`을 `main-limits`로 복제하고, Agents 블록 바로 아래에 Limits 블록을 넣은 뒤 그 레이아웃으로 바꿉니다. 기본 레이아웃은 직접 고칠 수 없어서 복제본을 씁니다.
-4. `templates/`의 템플릿 세 개를 `~/.config/herdr-core/templates/`에 복사합니다.
+4. `templates/`의 템플릿 네 개를 `~/.config/herdr-core/templates/`에 복사합니다.
 
 여러 번 실행해도 됩니다. 실행할 때마다 mod를 다시 복사하고 `main-limits`를 새로 만듭니다.
 
@@ -122,7 +153,7 @@ hc wait --children any
 cd ~/.config/herdr-app
 mv keys.json.bak keys.json
 rm -rf mods/agent-limits mods/agent-worktree mods/agent-split-right mods/agent-split-down layouts/main-limits.json
-rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer}.md
+rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer,codex-image}.md
 ```
 
 `keys.json.bak`에는 마지막 설치 직전의 키 설정이 들어 있습니다.
@@ -135,7 +166,7 @@ rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer}.
 | `mods/agent-worktree/` | `cmd-shift-n`. 고른 에이전트를 실행할 명령으로 넘겨 기본 New worktree 다이얼로그를 엽니다. |
 | `mods/agent-split-right/`, `mods/agent-split-down/` | `cmd-d`, `cmd-shift-d`. 포커스가 있는 pane을 나누고 고른 에이전트를 띄웁니다. |
 | `keys.json` | 위 단축키 세 개. |
-| `templates/` | herdr-core 협업 템플릿 세 개. |
+| `templates/` | herdr-core 협업 템플릿 네 개. |
 | `install.sh` | 설치 스크립트. |
 
 ## 선택지 바꾸기
