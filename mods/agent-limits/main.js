@@ -38,6 +38,16 @@ function resetText(w) {
   return `${DAYS[d.getDay()]} ${time}`;
 }
 
+// Time left until a window resets: "45m", "2h15m", "3d22h".
+function left(resetsAt, now) {
+  if (resetsAt == null) return "";
+  const m = Math.max(0, Math.floor((resetsAt - now) / 60));
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h${pad(m % 60)}m`;
+  return `${Math.floor(h / 24)}d${h % 24}h`;
+}
+
 function ago(seconds) {
   const m = Math.floor(seconds / 60);
   if (m < 1) return "just now";
@@ -124,7 +134,7 @@ export default class AgentLimits extends View {
       if (!w) return div().w(CELL).flex_none();
       const c = color(w.pct);
       const fill = Math.max(0, Math.min(100, w.pct));
-      return h_flex().w(CELL).flex_none().gap(4).items_center()
+      const bar = h_flex().w(CELL).flex_none().gap(4).items_center()
         .child(div().w(22).whitespace_nowrap().text_size(11).text_color(t.dim).child(w.label))
         .child(div().w(20).h(4).rounded(2).bg(t.border)
           .child(div().h_full().w(Math.max(fill > 0 ? 2 : 0, (20 * fill) / 100)).rounded(2).bg(c ?? (on ? t.muted : t.dim))))
@@ -132,12 +142,15 @@ export default class AgentLimits extends View {
           .text_color(c ?? (on ? t.muted : t.dim))
           .when(c != null, (el) => el.font_semibold())
           .child(`${Math.floor(w.pct)}%`));
+      return v_flex().w(CELL).flex_none().gap(1)
+        .child(bar)
+        .child(div().text_right().whitespace_nowrap().text_size(10).text_color(t.dim).child(left(w.resets_at, now)));
     };
 
     const row = (r) => {
       const resets = r.windows.filter((w) => w.resets_at != null).map((w) => `${w.label} resets ${resetText(w)}`);
       const tip = [r.name, ...resets, r.updated_at ? `updated ${ago(now - r.updated_at)}` : null].filter(Boolean).join(" · ");
-      return h_flex().id(`lim-${r.agent}`).px(8).h(28).flex_none().rounded(8).items_center().gap(6)
+      return h_flex().id(`lim-${r.agent}`).px(8).h(40).flex_none().rounded(8).items_center().gap(6)
         .hover((s) => s.bg(t.hover))
         .tooltip(tip)
         .child(pic(r))

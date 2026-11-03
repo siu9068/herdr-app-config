@@ -68,7 +68,7 @@ herdr-app do layout.clone "{\"name\":\"main\",\"as\":\"$LAYOUT\"}" >/dev/null
 f="$HOME_DIR/layouts/$LAYOUT.json"
 wait_for "$f" || { echo "layout clone did not appear; is herdr-app open?" >&2; exit 1; }
 jq --arg spaces "$SPACES_MOD" '
-    {"id":"agent-limits","type":"block","content":{"mod":"agent-limits"},"size":{"px":106}} as $b
+    {"id":"agent-limits","type":"block","content":{"mod":"agent-limits"},"size":{"px":130}} as $b
   | {"id":"space-guard","type":"block","content":{"mod":"space-guard"},"size":{"px":0}} as $g
   | {"id":"config-sync","type":"block","content":{"mod":"config-sync"},"size":{"px":0}} as $c
   | walk(if type == "object" and (.children | type) == "array"

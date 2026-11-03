@@ -8,7 +8,7 @@
 
 ![Limits 패널](docs/limits.png)
 
-사이드바 Agents 목록 바로 아래에 Limits 패널이 붙습니다. 에이전트마다 한 줄씩, 짧은 한도(5h)와 긴 한도(7d)를 막대와 퍼센트로 보여줍니다. 플랜에 5h 한도가 없으면 그 칸은 비어 있습니다.
+사이드바 Agents 목록 바로 아래에 Limits 패널이 붙습니다. 에이전트마다 한 줄씩, 짧은 한도(5h)와 긴 한도(7d)를 막대와 퍼센트로 보여주고, 그 아래에 초기화까지 남은 시간(`45m`, `2h15m`, `3d20h`)을 보여줍니다. 플랜에 5h 한도가 없으면 그 칸은 비어 있습니다.
 
 - 70% 이상이면 주황, 90% 이상이면 빨강으로 바뀝니다.
 - 줄에 마우스를 올리면 각 한도가 리셋되는 시각과 마지막 갱신 시각이 나옵니다.
@@ -198,7 +198,7 @@ rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer,c
 
 | 경로 | 내용 |
 | --- | --- |
-| `mods/agent-limits/` | Limits 패널. [mchlkim/herdr-agent-limits](https://github.com/mchlkim/herdr-agent-limits) `1ca10c7`의 사본이고 MIT 라이선스입니다. |
+| `mods/agent-limits/` | Limits 패널. [mchlkim/herdr-agent-limits](https://github.com/mchlkim/herdr-agent-limits) `1ca10c7`의 수정본이고 MIT 라이선스입니다. 초기화까지 남은 시간 표시를 추가했고, 그래서 블록 높이가 106px에서 130px로 늘었습니다. |
 | `mods/agent-worktree/` | `cmd-shift-n`. 고른 에이전트를 실행할 명령으로 넘겨 기본 New worktree 다이얼로그를 엽니다. |
 | `mods/agent-split-right/`, `mods/agent-split-down/` | `cmd-d`, `cmd-shift-d`. 포커스가 있는 pane을 나누고 고른 에이전트를 띄웁니다. |
 | `patches/spaces-plus.py` | 복제한 Spaces mod에 폴더 버튼을 넣는 패치. |
