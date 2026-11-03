@@ -28,7 +28,16 @@ cp "$keys" "$keys.bak"
 jq -s '.[0] * .[1]' "$keys.bak" "$REPO/keys.json" >"$keys.tmp"
 mv "$keys.tmp" "$keys"
 
-# 3. Layout: a fresh clone of shipped `main` with the Limits panel under Agents.
+# 3. spaces-plus: a fresh clone of the shipped Spaces mod with an "Open folder" button beside its +.
+command -v python3 >/dev/null || { echo "python3 not found (xcode-select --install)" >&2; exit 1; }
+rm -rf "$HOME_DIR/mods/spaces-plus"
+herdr-app do mod.clone '{"name":"spaces","as":"spaces-plus"}' >/dev/null
+i=0
+while [ ! -f "$HOME_DIR/mods/spaces-plus/main.js" ] && [ "$i" -lt 20 ]; do sleep 0.5; i=$((i + 1)); done
+python3 "$REPO/patches/spaces-plus.py" "$HOME_DIR/mods/spaces-plus/main.js"
+herdr-app check "$HOME_DIR/mods/spaces-plus"
+
+# 4. Layout: a fresh clone of shipped `main` with the Limits panel under Agents and spaces-plus for Spaces.
 rm -f "$HOME_DIR/layouts/$LAYOUT.json"
 herdr-app do layout.clone "{\"name\":\"main\",\"as\":\"$LAYOUT\"}" >/dev/null
 i=0
@@ -40,12 +49,14 @@ jq '{"id":"agent-limits","type":"block","content":{"mod":"agent-limits"},"size":
   | {"id":"space-guard","type":"block","content":{"mod":"space-guard"},"size":{"px":0}} as $g
   | walk(if type == "object" and (.children | type) == "array"
          then .children |= [.[] | select(.id != "agent-limits" and .id != "space-guard") | if .id == "agents" then ., $b, $g else . end]
-         else . end)' "$f" >"$f.tmp"
+         else . end)
+  | walk(if type == "object" and .content?.mod? == "spaces" then .content.mod = "spaces-plus" else . end)' "$f" >"$f.tmp"
 mv "$f.tmp" "$f"
 grep -q '"agent-limits"' "$f" || { echo "no \"agents\" block found in $LAYOUT; add the Limits block by hand" >&2; exit 1; }
+grep -q '"spaces-plus"' "$f" || { echo "no \"spaces\" block found in $LAYOUT; the Open folder button is not shown" >&2; exit 1; }
 herdr-app do layout.switch "{\"name\":\"$LAYOUT\"}" >/dev/null
 
-# 4. herdr-core templates (hc run <name> "<task>"); same names are replaced.
+# 5. herdr-core templates (hc run <name> "<task>"); same names are replaced.
 TEMPLATES=$HOME/.config/herdr-core/templates
 mkdir -p "$TEMPLATES"
 cp "$REPO"/templates/*.md "$TEMPLATES/"

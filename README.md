@@ -42,6 +42,15 @@
 
 선택 창에서는 `1`~`3`을 누르거나 `↑↓`로 고른 뒤 `↵`를 누릅니다. 클릭해도 됩니다. `esc`를 누르면 닫힙니다. 마지막에 고른 항목은 키마다 따로 기억합니다.
 
+### 폴더를 골라 스페이스 열기
+
+![Spaces 헤더의 폴더 버튼](docs/spaces-open-folder.png)
+
+사이드바 Spaces 제목줄의 `+` 왼쪽에 폴더 버튼이 생깁니다. 누르면 macOS 폴더 선택 창(Finder)이 열리고, 고른 폴더에서 새 스페이스가 시작됩니다. `+`는 원래대로 홈 폴더에서 새 스페이스를 엽니다.
+
+- 이 컴퓨터의 폴더만 고를 수 있습니다. 원격 머신의 스페이스는 기존 `+`나 "New space there"로 엽니다.
+- Herdr 기본 `spaces` mod는 직접 고칠 수 없어서 `install.sh`가 설치할 때마다 기본 mod를 `spaces-plus`로 새로 복제하고 `patches/spaces-plus.py`로 버튼을 넣습니다. 그래서 Herdr가 업데이트되면 `install.sh`를 다시 실행해야 새 버전의 Spaces를 받습니다. Herdr가 그 부분 코드를 바꾸면 패치가 실패하고 스크립트가 멈춥니다.
+
 ### 닫힌 스페이스 다시 열기
 
 ![스페이스 닫힘 알림](docs/space-guard.png)
@@ -130,7 +139,7 @@ assets/hero.jpg 배경만 흰색으로 바꿔서 assets/hero-white.jpg로 저장
 ### 필요한 것
 
 - macOS와 herdr-app. 설치 중에 herdr-app이 켜져 있어야 합니다.
-- `git`, `jq`. 최근 macOS에는 `/usr/bin/jq`가 기본으로 들어 있습니다.
+- `git`, `jq`, `python3`. 최근 macOS에는 `/usr/bin/jq`가 기본으로 들어 있고, `python3`는 `xcode-select --install`로 설치됩니다.
 - 선택지로 쓸 `claude`, `codex` CLI. 사용량 패널에는 Claude Code나 Codex 로그인이 필요합니다.
 
 ### 설치 순서
@@ -149,8 +158,9 @@ assets/hero.jpg 배경만 흰색으로 바꿔서 assets/hero-white.jpg로 저장
 
 1. `mods/` 아래 mod 다섯 개를 먼저 `herdr-app check`로 검사하고, 모두 통과하면 `~/.config/herdr-app/mods/`에 복사합니다. 같은 이름의 mod가 있으면 이 저장소 것으로 바꿉니다. 하나라도 검사에 실패하면 아무것도 바꾸지 않고 멈춥니다.
 2. `keys.json`의 단축키 네 개를 `~/.config/herdr-app/keys.json`에 합칩니다. 원래 파일은 `keys.json.bak`으로 남습니다.
-3. 설치된 버전의 기본 레이아웃 `main`을 `main-limits`로 복제하고, Agents 블록 바로 아래에 Limits 블록과 보이지 않는 space-guard 블록을 넣은 뒤 그 레이아웃으로 바꿉니다. 기본 레이아웃은 직접 고칠 수 없어서 복제본을 씁니다.
-4. `templates/`의 템플릿 네 개를 `~/.config/herdr-core/templates/`에 복사합니다.
+3. Herdr 기본 `spaces` mod를 `spaces-plus`로 복제하고 폴더 버튼을 넣습니다.
+4. 설치된 버전의 기본 레이아웃 `main`을 `main-limits`로 복제하고, Agents 블록 바로 아래에 Limits 블록과 보이지 않는 space-guard 블록을 넣고 Spaces 블록을 `spaces-plus`로 바꾼 뒤 그 레이아웃으로 바꿉니다. 기본 레이아웃은 직접 고칠 수 없어서 복제본을 씁니다.
+5. `templates/`의 템플릿 네 개를 `~/.config/herdr-core/templates/`에 복사합니다.
 
 여러 번 실행해도 됩니다. 실행할 때마다 mod를 다시 복사하고 `main-limits`를 새로 만듭니다.
 
@@ -166,7 +176,7 @@ assets/hero.jpg 배경만 흰색으로 바꿔서 assets/hero-white.jpg로 저장
 ```sh
 cd ~/.config/herdr-app
 mv keys.json.bak keys.json
-rm -rf mods/agent-limits mods/agent-worktree mods/agent-split-right mods/agent-split-down mods/space-guard layouts/main-limits.json
+rm -rf mods/agent-limits mods/agent-worktree mods/agent-split-right mods/agent-split-down mods/space-guard mods/spaces-plus layouts/main-limits.json
 rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer,codex-image}.md
 ```
 
@@ -179,6 +189,7 @@ rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer,c
 | `mods/agent-limits/` | Limits 패널. [mchlkim/herdr-agent-limits](https://github.com/mchlkim/herdr-agent-limits) `1ca10c7`의 사본이고 MIT 라이선스입니다. |
 | `mods/agent-worktree/` | `cmd-shift-n`. 고른 에이전트를 실행할 명령으로 넘겨 기본 New worktree 다이얼로그를 엽니다. |
 | `mods/agent-split-right/`, `mods/agent-split-down/` | `cmd-d`, `cmd-shift-d`. 포커스가 있는 pane을 나누고 고른 에이전트를 띄웁니다. |
+| `patches/spaces-plus.py` | 복제한 Spaces mod에 폴더 버튼을 넣는 패치. |
 | `mods/space-guard/` | 사라진 스페이스 알림과 `cmd-shift-t` 다시 열기. |
 | `keys.json` | 위 단축키 네 개. |
 | `templates/` | herdr-core 협업 템플릿 네 개. |
