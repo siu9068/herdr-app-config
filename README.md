@@ -41,6 +41,45 @@
 
 선택 창에서는 `1`~`3`을 누르거나 `↑↓`로 고른 뒤 `↵`를 누릅니다. 클릭해도 됩니다. `esc`를 누르면 닫힙니다. 마지막에 고른 항목은 키마다 따로 기억합니다.
 
+### Claude와 Codex 협업 템플릿
+
+herdr-core(`hc`) 템플릿 세 개입니다. 한 에이전트가 다른 에이전트를 자식으로 띄워 일을 맡기고, 자식은 끝나면 `hc send`로 결과를 부모에게 보냅니다.
+
+| 템플릿 | 실행 명령 | 역할 |
+| --- | --- | --- |
+| `codex-reviewer` | `codex --no-daemon --yolo` | 읽기 전용 리뷰. 범위가 없으면 `git diff HEAD`를 봅니다. |
+| `codex-worker` | `codex --no-daemon --yolo` | 정해진 작업 하나를 구현하고 바꾼 파일과 검증 결과를 보고합니다. |
+| `claude-reviewer` | `claude --dangerously-skip-permissions` | Codex가 리더일 때 쓰는 읽기 전용 리뷰. |
+
+템플릿은 `~/.config/herdr-core/templates/<이름>.md` 파일 하나입니다. 위쪽 frontmatter에 `name`, `description`, `command`가 있고, 본문은 에이전트에게 줄 규칙입니다. `hc run <이름> "<작업>"`을 실행하면 `command`로 에이전트를 띄우고, 본문과 작업을 합친 내용을 첫 메시지로 보냅니다.
+
+```markdown
+---
+name: codex-reviewer
+description: Codex reviews a change or files read-only and reports findings
+command: codex --no-daemon --yolo
+---
+You are a code reviewer working for the agent that started you.
+...
+```
+
+사용할 때는 Claude에게 이렇게 말하면 됩니다.
+
+```
+codex-reviewer 템플릿으로 지금 diff 리뷰 맡겨줘
+```
+
+Claude가 실행하는 명령은 아래와 같고, 보고는 `<hc from="t16 review">...</hc>` 형태로 Claude 입력창에 들어옵니다.
+
+```sh
+hc run --bg --name review --cwd "$PWD" codex-reviewer "Scope: src/x.ts"
+hc wait --children any
+```
+
+- `hc templates`를 실행하면 설치된 템플릿 목록이 나옵니다.
+- Codex가 어떤 폴더를 처음 열면 "Trust this folder?" 확인 창이 떠서 첫 메시지가 전달되지 않습니다. 이때는 `hc read <이름>`으로 화면을 확인하고 `hc keys <이름> enter`로 승인한 다음 작업을 다시 보내면 됩니다. 한 번 승인한 폴더에서는 다시 뜨지 않습니다.
+- 둘이 같은 폴더에서 동시에 파일을 고치면 서로 덮어씁니다. 구현은 한쪽만 하고, 둘 다 고쳐야 하면 worktree를 나누세요.
+
 ## 설치
 
 ### 필요한 것
@@ -63,9 +102,10 @@
 
 ### install.sh가 하는 일
 
-1. `mods/` 아래 mod 네 개를 `~/.config/herdr-app/mods/`에 복사하고 각각 `herdr-app check`로 검사합니다. 같은 이름의 mod가 있으면 이 저장소 것으로 바꿉니다.
+1. `mods/` 아래 mod 네 개를 먼저 `herdr-app check`로 검사하고, 모두 통과하면 `~/.config/herdr-app/mods/`에 복사합니다. 같은 이름의 mod가 있으면 이 저장소 것으로 바꿉니다. 하나라도 검사에 실패하면 아무것도 바꾸지 않고 멈춥니다.
 2. `keys.json`의 단축키 세 개를 `~/.config/herdr-app/keys.json`에 합칩니다. 원래 파일은 `keys.json.bak`으로 남습니다.
 3. 설치된 버전의 기본 레이아웃 `main`을 `main-limits`로 복제하고, Agents 블록 바로 아래에 Limits 블록을 넣은 뒤 그 레이아웃으로 바꿉니다. 기본 레이아웃은 직접 고칠 수 없어서 복제본을 씁니다.
+4. `templates/`의 템플릿 세 개를 `~/.config/herdr-core/templates/`에 복사합니다.
 
 여러 번 실행해도 됩니다. 실행할 때마다 mod를 다시 복사하고 `main-limits`를 새로 만듭니다.
 
@@ -82,6 +122,7 @@
 cd ~/.config/herdr-app
 mv keys.json.bak keys.json
 rm -rf mods/agent-limits mods/agent-worktree mods/agent-split-right mods/agent-split-down layouts/main-limits.json
+rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer}.md
 ```
 
 `keys.json.bak`에는 마지막 설치 직전의 키 설정이 들어 있습니다.
@@ -94,6 +135,7 @@ rm -rf mods/agent-limits mods/agent-worktree mods/agent-split-right mods/agent-s
 | `mods/agent-worktree/` | `cmd-shift-n`. 고른 에이전트를 실행할 명령으로 넘겨 기본 New worktree 다이얼로그를 엽니다. |
 | `mods/agent-split-right/`, `mods/agent-split-down/` | `cmd-d`, `cmd-shift-d`. 포커스가 있는 pane을 나누고 고른 에이전트를 띄웁니다. |
 | `keys.json` | 위 단축키 세 개. |
+| `templates/` | herdr-core 협업 템플릿 세 개. |
 | `install.sh` | 설치 스크립트. |
 
 ## 선택지 바꾸기
