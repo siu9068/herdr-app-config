@@ -1,5 +1,7 @@
 {
   "global": {
-    "cmd-shift-n": "mod.open:worktree-key"
+    "cmd-shift-n": "mod.open:agent-worktree",
+    "cmd-d": "mod.open:agent-split-right",
+    "cmd-shift-d": "mod.open:agent-split-down"
   }
 }
