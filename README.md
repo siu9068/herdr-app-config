@@ -32,6 +32,7 @@
 | `cmd-shift-n` | 지금 스페이스의 저장소로 새 worktree 만들기 | Claude, Codex, Shell |
 | `cmd-d` | 오른쪽으로 분할 | Claude, Codex, Shell |
 | `cmd-shift-d` | 아래로 분할 | Claude, Codex, Shell |
+| `cmd-shift-t` | 마지막에 닫힌 스페이스 다시 열기 | |
 
 선택지마다 실행하는 명령은 아래와 같습니다.
 
@@ -40,6 +41,17 @@
 - Shell: 에이전트 없이 기본 셸
 
 선택 창에서는 `1`~`3`을 누르거나 `↑↓`로 고른 뒤 `↵`를 누릅니다. 클릭해도 됩니다. `esc`를 누르면 닫힙니다. 마지막에 고른 항목은 키마다 따로 기억합니다.
+
+### 닫힌 스페이스 다시 열기
+
+`cmd-w`, `cmd-shift-w`로 마지막 터미널을 닫으면 앱이 먼저 확인을 묻습니다. 하지만 스페이스의 마지막 셸에서 `exit`나 `ctrl-d`로 셸이 끝나면 묻지 않고 스페이스가 바로 사라지고, 앱에는 그걸 다시 여는 화면이 없습니다.
+
+`space-guard` mod가 이 경우를 받아 줍니다. 스페이스가 사라지면 오른쪽 아래에 `Space "<이름>" closed` 알림이 뜹니다. 알림을 클릭하거나 `cmd-shift-t`를 누르면 같은 이름과 폴더로 스페이스를 다시 엽니다. `cmd-shift-t`는 최근에 닫힌 것부터 10개까지 차례로 엽니다.
+
+- 다시 열리는 건 스페이스와 셸 하나입니다. 탭, 분할, 실행 중이던 에이전트는 돌아오지 않습니다.
+- 확인 창을 거쳐 일부러 닫은 스페이스에도 알림이 뜹니다. 무시하면 됩니다.
+- 원격 머신 연결이 끊겨 그 머신의 스페이스가 안 보이게 된 건 닫힌 것으로 치지 않습니다.
+- 레이아웃에 보이지 않는 블록(높이 0)으로 들어가 있어서 `main-limits` 레이아웃에서만 동작합니다. 닫힌 목록은 앱을 다시 시작하면 비워집니다.
 
 ### Claude와 Codex 협업 템플릿
 
@@ -133,9 +145,9 @@ assets/hero.jpg 배경만 흰색으로 바꿔서 assets/hero-white.jpg로 저장
 
 ### install.sh가 하는 일
 
-1. `mods/` 아래 mod 네 개를 먼저 `herdr-app check`로 검사하고, 모두 통과하면 `~/.config/herdr-app/mods/`에 복사합니다. 같은 이름의 mod가 있으면 이 저장소 것으로 바꿉니다. 하나라도 검사에 실패하면 아무것도 바꾸지 않고 멈춥니다.
-2. `keys.json`의 단축키 세 개를 `~/.config/herdr-app/keys.json`에 합칩니다. 원래 파일은 `keys.json.bak`으로 남습니다.
-3. 설치된 버전의 기본 레이아웃 `main`을 `main-limits`로 복제하고, Agents 블록 바로 아래에 Limits 블록을 넣은 뒤 그 레이아웃으로 바꿉니다. 기본 레이아웃은 직접 고칠 수 없어서 복제본을 씁니다.
+1. `mods/` 아래 mod 다섯 개를 먼저 `herdr-app check`로 검사하고, 모두 통과하면 `~/.config/herdr-app/mods/`에 복사합니다. 같은 이름의 mod가 있으면 이 저장소 것으로 바꿉니다. 하나라도 검사에 실패하면 아무것도 바꾸지 않고 멈춥니다.
+2. `keys.json`의 단축키 네 개를 `~/.config/herdr-app/keys.json`에 합칩니다. 원래 파일은 `keys.json.bak`으로 남습니다.
+3. 설치된 버전의 기본 레이아웃 `main`을 `main-limits`로 복제하고, Agents 블록 바로 아래에 Limits 블록과 보이지 않는 space-guard 블록을 넣은 뒤 그 레이아웃으로 바꿉니다. 기본 레이아웃은 직접 고칠 수 없어서 복제본을 씁니다.
 4. `templates/`의 템플릿 네 개를 `~/.config/herdr-core/templates/`에 복사합니다.
 
 여러 번 실행해도 됩니다. 실행할 때마다 mod를 다시 복사하고 `main-limits`를 새로 만듭니다.
@@ -152,7 +164,7 @@ assets/hero.jpg 배경만 흰색으로 바꿔서 assets/hero-white.jpg로 저장
 ```sh
 cd ~/.config/herdr-app
 mv keys.json.bak keys.json
-rm -rf mods/agent-limits mods/agent-worktree mods/agent-split-right mods/agent-split-down layouts/main-limits.json
+rm -rf mods/agent-limits mods/agent-worktree mods/agent-split-right mods/agent-split-down mods/space-guard layouts/main-limits.json
 rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer,codex-image}.md
 ```
 
@@ -165,7 +177,8 @@ rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer,c
 | `mods/agent-limits/` | Limits 패널. [mchlkim/herdr-agent-limits](https://github.com/mchlkim/herdr-agent-limits) `1ca10c7`의 사본이고 MIT 라이선스입니다. |
 | `mods/agent-worktree/` | `cmd-shift-n`. 고른 에이전트를 실행할 명령으로 넘겨 기본 New worktree 다이얼로그를 엽니다. |
 | `mods/agent-split-right/`, `mods/agent-split-down/` | `cmd-d`, `cmd-shift-d`. 포커스가 있는 pane을 나누고 고른 에이전트를 띄웁니다. |
-| `keys.json` | 위 단축키 세 개. |
+| `mods/space-guard/` | 사라진 스페이스 알림과 `cmd-shift-t` 다시 열기. |
+| `keys.json` | 위 단축키 네 개. |
 | `templates/` | herdr-core 협업 템플릿 네 개. |
 | `install.sh` | 설치 스크립트. |
 

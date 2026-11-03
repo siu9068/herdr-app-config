@@ -35,9 +35,11 @@ i=0
 while [ ! -f "$HOME_DIR/layouts/$LAYOUT.json" ] && [ "$i" -lt 20 ]; do sleep 0.5; i=$((i + 1)); done
 f="$HOME_DIR/layouts/$LAYOUT.json"
 [ -f "$f" ] || { echo "layout clone did not appear; is herdr-app open?" >&2; exit 1; }
+# Limits panel under Agents, then space-guard's invisible block (it only watches spaces).
 jq '{"id":"agent-limits","type":"block","content":{"mod":"agent-limits"},"size":{"px":106}} as $b
+  | {"id":"space-guard","type":"block","content":{"mod":"space-guard"},"size":{"px":0}} as $g
   | walk(if type == "object" and (.children | type) == "array"
-         then .children |= [.[] | select(.id != "agent-limits") | if .id == "agents" then ., $b else . end]
+         then .children |= [.[] | select(.id != "agent-limits" and .id != "space-guard") | if .id == "agents" then ., $b, $g else . end]
          else . end)' "$f" >"$f.tmp"
 mv "$f.tmp" "$f"
 grep -q '"agent-limits"' "$f" || { echo "no \"agents\" block found in $LAYOUT; add the Limits block by hand" >&2; exit 1; }
