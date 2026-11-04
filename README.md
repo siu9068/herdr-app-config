@@ -49,7 +49,18 @@
 사이드바 Spaces 제목줄의 `+` 왼쪽에 폴더 버튼이 생깁니다. 누르면 macOS 폴더 선택 창(Finder)이 열리고, 고른 폴더에서 새 스페이스가 시작됩니다. `+`는 원래대로 홈 폴더에서 새 스페이스를 엽니다.
 
 - 이 컴퓨터의 폴더만 고를 수 있습니다. 원격 머신의 스페이스는 기존 `+`나 "New space there"로 엽니다.
-- Herdr 기본 `spaces` mod는 직접 고칠 수 없어서 `install.sh`가 설치할 때마다 기본 mod를 `spaces-plus`로 새로 복제하고 `patches/spaces-plus.py`로 버튼을 넣습니다. Herdr가 업데이트되면 `config-sync`가 이 과정을 자동으로 다시 합니다. Herdr가 그 부분 코드를 바꿔 패치가 실패하면 이전 `spaces-plus`를 그대로 씁니다.
+- Herdr 기본 `spaces` mod는 직접 고칠 수 없어서 `install.sh`가 설치할 때마다 기본 mod를 `spaces-plus`로 새로 복제하고 `patches/spaces-plus.py`로 폴더 버튼과 그룹 모드를 넣습니다. Herdr가 업데이트되면 `config-sync`가 이 과정을 자동으로 다시 합니다. Herdr가 그 부분 코드를 바꿔 패치가 실패하면 이전 `spaces-plus`를 그대로 씁니다.
+
+### 스페이스를 그룹으로 묶기
+
+Spaces 제목줄의 폴더 버튼 왼쪽에 그룹 버튼(겹친 사각형)이 생깁니다. 누르면 그룹 모드가 켜지고, This computer의 스페이스를 개인, 회사처럼 직접 만든 그룹 아래에 모아 보여줍니다. 다시 누르면 원래 목록으로 돌아갑니다.
+
+- 목록 맨 아래 `New group`을 누르고 이름을 입력한 뒤 `↵`를 누르면 그룹이 생깁니다. `esc`를 누르거나 다른 곳을 누르면 취소됩니다.
+- 스페이스를 그룹 헤더 위로 끌어다 놓으면 그 그룹에 들어갑니다. 다른 그룹의 스페이스 위에 놓으면 그 자리로 옮겨지면서 그 그룹에 들어갑니다. 그룹에서 빼려면 드래그하는 동안 나타나는 `Ungrouped` 헤더에 놓습니다.
+- 그룹 헤더를 누르면 접고 펼칩니다. 우클릭하면 이름을 바꿀 수 있고, 이름을 비우고 `↵`를 누르면 그룹이 지워지고 그 안의 스페이스는 `Ungrouped`로 갑니다.
+- worktree 스페이스는 원래 저장소 스페이스 아래에 붙어서 그 그룹을 따라갑니다.
+- 원격 머신의 스페이스는 그룹에 넣지 않고 지금처럼 머신 헤더 아래에 둡니다. 사이드바를 좁게 접은 상태에서는 그룹 없이 보입니다.
+- 그룹은 스페이스 id로 기억합니다. 스페이스를 닫았다가 `cmd-shift-t`로 다시 열면 새 스페이스가 되어 그룹에서 빠집니다.
 
 ### 닫힌 스페이스 다시 열기
 
@@ -66,10 +77,10 @@
 
 ### Herdr 업데이트 후 자동 재적용
 
-Herdr는 업데이트할 때 기본 레이아웃과 기본 mod만 새 버전으로 바꾸고, 복제본(`main-limits`, `spaces-plus`)은 옛 버전 그대로 둡니다. `config-sync` mod가 앱을 시작할 때 Herdr 버전을 확인해서, 마지막으로 설정을 적용한 버전과 다르면 `install.sh`를 혼자 다시 실행합니다. 그러면 새 버전의 레이아웃과 Spaces를 다시 복제해 Limits 패널, 폴더 버튼, 보이지 않는 블록을 다시 넣습니다.
+Herdr는 업데이트할 때 기본 레이아웃과 기본 mod만 새 버전으로 바꾸고, 복제본(`main-limits`, `spaces-plus`)은 옛 버전 그대로 둡니다. `config-sync` mod가 앱을 시작할 때 Herdr 버전을 확인해서, 마지막으로 설정을 적용한 버전과 다르면 `install.sh`를 혼자 다시 실행합니다. 그러면 새 버전의 레이아웃과 Spaces를 다시 복제해 Limits 패널, 폴더 버튼, 그룹 모드, 보이지 않는 블록을 다시 넣습니다.
 
 - 시작할 때 `Herdr <버전>: re-applying config`, 끝나면 `Config re-applied (Herdr <버전>)` 알림이 뜹니다.
-- Herdr가 Spaces 코드를 바꿔 폴더 버튼 패치가 실패하면, 이전 `spaces-plus`를 그대로 두고 나머지를 적용한 뒤 `Config re-applied with a warning` 알림을 띄웁니다. 이전 것도 없으면 기본 Spaces를 씁니다.
+- Herdr가 Spaces 코드를 바꿔 spaces-plus 패치가 실패하면, 이전 `spaces-plus`를 그대로 두고 나머지를 적용한 뒤 `Config re-applied with a warning` 알림을 띄웁니다. 이전 것도 없으면 기본 Spaces를 씁니다.
 - 실패하면 `Config re-apply failed` 알림을 띄우고 같은 버전에서는 다시 시도하지 않습니다. 로그는 `~/.local/state/herdr-app-config/sync.log`에 있습니다. 원인을 고친 뒤 `install.sh`를 직접 실행하면 됩니다.
 - 저장소를 `git pull`하지는 않습니다. 이 컴퓨터에 있는 저장소 그대로 다시 적용합니다.
 - 상태 파일은 `~/.local/state/herdr-app-config/`에 있습니다. `repo`(저장소 위치), `applied`(마지막으로 적용한 Herdr 버전), `attempted`, `announced`, `sync.log`입니다.
@@ -169,7 +180,7 @@ assets/hero.jpg 배경만 흰색으로 바꿔서 assets/hero-white.jpg로 저장
 1. `mods/` 아래 mod 여섯 개를 먼저 `herdr-app check`로 검사하고, 모두 통과하면 `~/.config/herdr-app/mods/`에 복사합니다. 같은 이름의 mod가 있으면 이 저장소 것으로 바꿉니다. 하나라도 검사에 실패하면 아무것도 바꾸지 않고 멈춥니다.
 2. `keys.json`의 단축키 네 개를 `~/.config/herdr-app/keys.json`에 합칩니다. 원래 파일은 `keys.json.bak`으로 남습니다.
 3. `templates/`의 템플릿 네 개를 `~/.config/herdr-core/templates/`에 복사합니다.
-4. Herdr 기본 `spaces` mod를 복제해 폴더 버튼을 넣고, 성공하면 `spaces-plus`로 바꿔 넣습니다. 실패하면 이전 `spaces-plus`를 그대로 둡니다.
+4. Herdr 기본 `spaces` mod를 복제해 폴더 버튼과 그룹 모드를 넣고, 성공하면 `spaces-plus`로 바꿔 넣습니다. 실패하면 이전 `spaces-plus`를 그대로 둡니다.
 5. 설치된 버전의 기본 레이아웃 `main`을 `main-limits`로 복제하고, Agents 블록 바로 아래에 Limits 블록과 보이지 않는 space-guard, config-sync 블록을 넣고 Spaces 블록을 `spaces-plus`로 바꿉니다. 기본 레이아웃은 직접 고칠 수 없어서 복제본을 씁니다.
 6. 저장소 위치와 지금 Herdr 버전을 `~/.local/state/herdr-app-config/`에 기록하고 `main-limits`로 전환합니다.
 
@@ -201,7 +212,7 @@ rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer,c
 | `mods/agent-limits/` | Limits 패널. [mchlkim/herdr-agent-limits](https://github.com/mchlkim/herdr-agent-limits) `1ca10c7`의 수정본이고 MIT 라이선스입니다. 초기화까지 남은 시간 표시를 추가했고, 그래서 블록 높이가 106px에서 130px로 늘었습니다. |
 | `mods/agent-worktree/` | `cmd-shift-n`. 고른 에이전트를 실행할 명령으로 넘겨 기본 New worktree 다이얼로그를 엽니다. |
 | `mods/agent-split-right/`, `mods/agent-split-down/` | `cmd-d`, `cmd-shift-d`. 포커스가 있는 pane을 나누고 고른 에이전트를 띄웁니다. |
-| `patches/spaces-plus.py` | 복제한 Spaces mod에 폴더 버튼을 넣는 패치. |
+| `patches/spaces-plus.py` | 복제한 Spaces mod에 폴더 버튼과 그룹 모드를 넣는 패치. |
 | `mods/config-sync/` | Herdr 버전이 바뀌면 `install.sh`를 다시 실행. |
 | `mods/space-guard/` | 사라진 스페이스 알림과 `cmd-shift-t` 다시 열기. |
 | `keys.json` | 위 단축키 네 개. |

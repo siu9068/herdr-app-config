@@ -38,7 +38,7 @@ TEMPLATES=$HOME/.config/herdr-core/templates
 mkdir -p "$TEMPLATES"
 cp "$REPO"/templates/*.md "$TEMPLATES/"
 
-# 4. spaces-plus: a fresh clone of the shipped Spaces mod with an "Open folder" button beside its +.
+# 4. spaces-plus: a fresh clone of the shipped Spaces mod with an "Open folder" button beside its + and a group mode.
 # Built beside the old one and swapped in only when it patches and checks, so a Herdr change that
 # breaks the patch keeps the working copy (or plain Spaces) instead of a broken sidebar.
 SPACES_MOD=spaces-plus
@@ -56,7 +56,7 @@ else
   if [ -f "$HOME_DIR/mods/spaces-plus/main.js" ]; then
     echo "warning: spaces-plus patch failed on this Herdr; keeping the previous spaces-plus" >&2
   else
-    echo "warning: spaces-plus patch failed on this Herdr; using plain Spaces (no Open folder button)" >&2
+    echo "warning: spaces-plus patch failed on this Herdr; using plain Spaces (no Open folder button, no groups)" >&2
     SPACES_MOD=spaces
   fi
 fi
