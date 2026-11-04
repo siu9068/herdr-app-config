@@ -44,7 +44,7 @@
 
 ### 폴더를 골라 스페이스 열기
 
-![Spaces 헤더의 폴더 버튼](docs/spaces-open-folder.png)
+![Spaces 제목줄: 그룹, 폴더, + 버튼](docs/spaces-header.png)
 
 사이드바 Spaces 제목줄의 `+` 왼쪽에 폴더 버튼이 생깁니다. 누르면 macOS 폴더 선택 창(Finder)이 열리고, 고른 폴더에서 새 스페이스가 시작됩니다. `+`는 원래대로 홈 폴더에서 새 스페이스를 엽니다.
 
@@ -52,6 +52,8 @@
 - Herdr 기본 `spaces` mod는 직접 고칠 수 없어서 `install.sh`가 설치할 때마다 기본 mod를 `spaces-plus`로 새로 복제하고 `patches/spaces-plus.py`로 폴더 버튼과 그룹 모드를 넣습니다. Herdr가 업데이트되면 `config-sync`가 이 과정을 자동으로 다시 합니다. Herdr가 그 부분 코드를 바꿔 패치가 실패하면 이전 `spaces-plus`를 그대로 씁니다.
 
 ### 스페이스를 그룹으로 묶기
+
+![Spaces 제목줄: 그룹, 폴더, + 버튼](docs/spaces-header.png)
 
 Spaces 제목줄의 폴더 버튼 왼쪽에 그룹 버튼(겹친 사각형)이 생깁니다. 누르면 그룹 모드가 켜지고, This computer의 스페이스를 개인, 회사처럼 직접 만든 그룹 아래에 모아 보여줍니다. 다시 누르면 원래 목록으로 돌아갑니다.
 
