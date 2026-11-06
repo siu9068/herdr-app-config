@@ -11,6 +11,10 @@ const CHOICES = [
   { name: "Shell", argv: null },
 ];
 
+// Herdr execs argv with its own PATH, which misses tools set up in the shell rc (nvm, mise...).
+// Run the agent through the user's login + interactive shell so it is found wherever it is installed.
+const viaShell = (argv) => ["/bin/sh", "-c", 'exec "${SHELL:-/bin/sh}" -lic "$0"', "exec " + argv.join(" ")];
+
 const TITLE = { worktree: "New worktree with", right: "Split right with", down: "Split down with" };
 
 function lastChoice() {
@@ -37,7 +41,7 @@ export default function picker(action) {
     pick(i) {
       try { localStorage.setItem("choice", String(i)); } catch {}
       closeOverlay(props().overlay);
-      const argv = CHOICES[i].argv;
+      const argv = CHOICES[i].argv && viaShell(CHOICES[i].argv);
       if (action === "worktree") {
         if (this.space) openOverlay({ mod: "worktree", kind: "dialog", width: 440, height: 260, props: { space: this.space, action: "new", ...(argv ? { argv } : {}) } });
       } else {

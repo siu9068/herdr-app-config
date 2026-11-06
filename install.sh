@@ -79,11 +79,12 @@ jq --arg spaces "$SPACES_MOD" '
 mv "$f.tmp" "$f"
 grep -q '"agent-limits"' "$f" || { echo "no \"agents\" block found in $LAYOUT; add the Limits block by hand" >&2; exit 1; }
 
-# 6. Remember where this repo is and which Herdr it was applied to (config-sync compares on start),
+# 6. Remember where this repo is and which "<Herdr version> <commit>" it applied (config-sync compares it),
 # then switch last: switching reloads the mods, and config-sync must already see this version.
 mkdir -p "$STATE"
 printf '%s\n' "$REPO" >"$STATE/repo"
-herdr-app --version | awk '{print $NF}' >"$STATE/applied"
+rev=$(git -C "$REPO" rev-parse HEAD 2>/dev/null || echo none)
+printf '%s %s\n' "$(herdr-app --version | awk '{print $NF}')" "$rev" >"$STATE/applied"
 herdr-app do layout.switch "{\"name\":\"$LAYOUT\"}" >/dev/null
 
 echo "done: mods, keys (backup: $keys.bak), templates in $TEMPLATES, layout $LAYOUT, Herdr $(cat "$STATE/applied")"

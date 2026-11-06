@@ -40,6 +40,8 @@
 - Codex: `codex --no-daemon --yolo`. `--no-daemon`이 있어야 Codex 명령이 herdr 터미널 안에서 실행되고 `hc send` 같은 협업 명령이 동작합니다.
 - Shell: 에이전트 없이 기본 셸
 
+Claude와 Codex는 `$SHELL -lic`(로그인 + 대화형 셸)로 실행합니다. Herdr는 argv를 자기 PATH로 바로 실행하는데, 이 PATH에는 nvm이나 mise처럼 셸 rc에서 잡는 경로가 없습니다. 셸을 거치면 PC마다 설치 경로가 달라도 터미널에서 찾는 그 명령이 실행됩니다.
+
 선택 창에서는 `1`~`3`을 누르거나 `↑↓`로 고른 뒤 `↵`를 누릅니다. 클릭해도 됩니다. `esc`를 누르면 닫힙니다. 마지막에 고른 항목은 키마다 따로 기억합니다.
 
 ### 폴더를 골라 스페이스 열기
@@ -49,7 +51,7 @@
 사이드바 Spaces 제목줄의 `+` 왼쪽에 폴더 버튼이 생깁니다. 누르면 macOS 폴더 선택 창(Finder)이 열리고, 고른 폴더에서 새 스페이스가 시작됩니다. `+`는 원래대로 홈 폴더에서 새 스페이스를 엽니다.
 
 - 이 컴퓨터의 폴더만 고를 수 있습니다. 원격 머신의 스페이스는 기존 `+`나 "New space there"로 엽니다.
-- Herdr 기본 `spaces` mod는 직접 고칠 수 없어서 `install.sh`가 설치할 때마다 기본 mod를 `spaces-plus`로 새로 복제하고 `patches/spaces-plus.py`로 폴더 버튼과 그룹 모드를 넣습니다. Herdr가 업데이트되면 `config-sync`가 이 과정을 자동으로 다시 합니다. Herdr가 그 부분 코드를 바꿔 패치가 실패하면 이전 `spaces-plus`를 그대로 씁니다.
+- Herdr 기본 `spaces` mod는 직접 고칠 수 없어서 `install.sh`가 설치할 때마다 기본 mod를 `spaces-plus`로 새로 복제하고 `patches/spaces-plus.py`로 폴더 버튼과 그룹 모드를 넣습니다. Herdr가 업데이트되거나 저장소 커밋이 바뀌면 `config-sync`가 이 과정을 자동으로 다시 합니다. Herdr가 그 부분 코드를 바꿔 패치가 실패하면 이전 `spaces-plus`를 그대로 씁니다.
 
 ### 스페이스를 그룹으로 묶기
 
@@ -77,15 +79,15 @@ Spaces 제목줄의 폴더 버튼 왼쪽에 그룹 버튼(겹친 사각형)이 �
 - 원격 머신 연결이 끊겨 그 머신의 스페이스가 안 보이게 된 건 닫힌 것으로 치지 않습니다.
 - 레이아웃에 보이지 않는 블록(높이 0)으로 들어가 있어서 `main-limits` 레이아웃에서만 동작합니다. 닫힌 목록은 앱을 다시 시작하면 비워집니다.
 
-### Herdr 업데이트 후 자동 재적용
+### Herdr 업데이트와 저장소 변경 자동 재적용
 
-Herdr는 업데이트할 때 기본 레이아웃과 기본 mod만 새 버전으로 바꾸고, 복제본(`main-limits`, `spaces-plus`)은 옛 버전 그대로 둡니다. `config-sync` mod가 앱을 시작할 때 Herdr 버전을 확인해서, 마지막으로 설정을 적용한 버전과 다르면 `install.sh`를 혼자 다시 실행합니다. 그러면 새 버전의 레이아웃과 Spaces를 다시 복제해 Limits 패널, 폴더 버튼, 그룹 모드, 보이지 않는 블록을 다시 넣습니다.
+Herdr는 업데이트할 때 기본 레이아웃과 기본 mod만 새 버전으로 바꾸고, 복제본(`main-limits`, `spaces-plus`)은 옛 버전 그대로 둡니다. `config-sync` mod가 앱을 시작할 때와 그 뒤 10분마다 저장소를 `git pull --ff-only`하고, Herdr 버전이나 저장소 커밋이 마지막으로 적용한 것과 다르면 `install.sh`를 혼자 다시 실행합니다. 다른 컴퓨터에서 푸시한 설정도 이렇게 따라옵니다. 그러면 새 버전의 레이아웃과 Spaces를 다시 복제해 Limits 패널, 폴더 버튼, 그룹 모드, 보이지 않는 블록을 다시 넣습니다.
 
-- 시작할 때 `Herdr <버전>: re-applying config`, 끝나면 `Config re-applied (Herdr <버전>)` 알림이 뜹니다.
+- 시작할 때 `Re-applying config (Herdr <버전>, <커밋>)`, 끝나면 `Config re-applied (Herdr <버전>, <커밋>)` 알림이 뜹니다.
 - Herdr가 Spaces 코드를 바꿔 spaces-plus 패치가 실패하면, 이전 `spaces-plus`를 그대로 두고 나머지를 적용한 뒤 `Config re-applied with a warning` 알림을 띄웁니다. 이전 것도 없으면 기본 Spaces를 씁니다.
-- 실패하면 `Config re-apply failed` 알림을 띄우고 같은 버전에서는 다시 시도하지 않습니다. 로그는 `~/.local/state/herdr-app-config/sync.log`에 있습니다. 원인을 고친 뒤 `install.sh`를 직접 실행하면 됩니다.
-- 저장소를 `git pull`하지는 않습니다. 이 컴퓨터에 있는 저장소 그대로 다시 적용합니다.
-- 상태 파일은 `~/.local/state/herdr-app-config/`에 있습니다. `repo`(저장소 위치), `applied`(마지막으로 적용한 Herdr 버전), `attempted`, `announced`, `sync.log`입니다.
+- 실패하면 `Config re-apply failed` 알림을 띄우고 같은 버전과 커밋에서는 다시 시도하지 않습니다. 새 커밋이 들어오면 다시 시도합니다. 로그는 `~/.local/state/herdr-app-config/sync.log`에 있습니다. 원인을 고친 뒤 `install.sh`를 직접 실행하면 됩니다.
+- pull이 실패하면(오프라인, 충돌하는 로컬 수정) 지금 커밋 그대로 둡니다. 커밋하지 않은 로컬 수정은 커밋이 바뀌는 다음 재적용 때 함께 복사됩니다.
+- 상태 파일은 `~/.local/state/herdr-app-config/`에 있습니다. `repo`(저장소 위치), `applied`(마지막으로 적용한 `<Herdr 버전> <커밋>`), `attempted`, `announced`, `sync.log`입니다.
 
 ### Claude와 Codex 협업 템플릿
 
@@ -215,7 +217,7 @@ rm ~/.config/herdr-core/templates/{codex-reviewer,codex-worker,claude-reviewer,c
 | `mods/agent-worktree/` | `cmd-shift-n`. 고른 에이전트를 실행할 명령으로 넘겨 기본 New worktree 다이얼로그를 엽니다. |
 | `mods/agent-split-right/`, `mods/agent-split-down/` | `cmd-d`, `cmd-shift-d`. 포커스가 있는 pane을 나누고 고른 에이전트를 띄웁니다. |
 | `patches/spaces-plus.py` | 복제한 Spaces mod에 폴더 버튼과 그룹 모드를 넣는 패치. |
-| `mods/config-sync/` | Herdr 버전이 바뀌면 `install.sh`를 다시 실행. |
+| `mods/config-sync/` | 저장소를 pull하고 Herdr 버전이나 커밋이 바뀌면 `install.sh`를 다시 실행. |
 | `mods/space-guard/` | 사라진 스페이스 알림과 `cmd-shift-t` 다시 열기. |
 | `keys.json` | 위 단축키 네 개. |
 | `templates/` | herdr-core 협업 템플릿 네 개. |
