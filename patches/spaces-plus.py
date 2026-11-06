@@ -79,7 +79,7 @@ METHODS = '''  // Keeps the groups, dropping closed spaces and removed groups.
 
   // A space being dragged from this computer (only those go in groups).
   draggingLocal() {
-    const s = this.pressed === null ? null : spaces()[this.pressed];
+    const s = this.pressed === null ? null : spaces().find((s) => s.id === this.pressed);
     return Boolean(s) && !s.machine;
   }
 
@@ -138,7 +138,7 @@ METHODS = '''  // Keeps the groups, dropping closed spaces and removed groups.
         cx.notify();
       })
       .on_mouse_up("left", (_e, cx) => {
-        if (this.draggingLocal() && this.overGroup === name) this.setGroup(spaces()[this.pressed].id, name);
+        if (this.draggingLocal() && this.overGroup === name) this.setGroup(this.pressed, name);
         this.pressed = null;
         this.over = null;
         this.overGroup = undefined;
@@ -178,10 +178,10 @@ EDITS = [
     ('        if (this.pressed !== null && this.over !== over) {',
      '        if (this.pressed !== null && this.overGroup !== undefined) { this.overGroup = undefined; cx.notify(); }\n'
      '        if (this.pressed !== null && this.over !== over) {'),
-    # dropped on a space in another group: it joins that group too
-    ('        if (from !== null && over === i && from !== i) run("space.move", { id: spaces()[from].id, index: i + 1 });',
-     '        if (from !== null && over === i && from !== i && this.groupOf && w.id in this.groupOf) this.setGroup(spaces()[from].id, this.groupOf[w.id]);\n'
-     '        if (from !== null && over === i && from !== i) run("space.move", { id: spaces()[from].id, index: i + 1 });'),
+    # dropped on a space in another group: it joins that group too (pressed/over hold space ids)
+    ('        if (from !== null && over === w.id && from !== w.id) {',
+     '        if (from !== null && over === w.id && from !== w.id && this.groupOf && w.id in this.groupOf) this.setGroup(from, this.groupOf[w.id]);\n'
+     '        if (from !== null && over === w.id && from !== w.id) {'),
     ('.on_mouse_up("left", (_e, cx) => { this.pressed = null; cx.notify(); })',
      '.on_mouse_up("left", (_e, cx) => { this.pressed = null; this.overGroup = undefined; cx.notify(); })'),
     ('  compact({ w, i }, t) {', METHODS + '  compact({ w, i }, t) {'),
