@@ -61,9 +61,9 @@ else
   fi
 fi
 
-# 5. Layout: a fresh clone of shipped `main` with the Limits panel and the invisible space-guard and
-# config-sync blocks under Agents, spaces-plus for Spaces, and the invisible space-nav block in the work
-# column (outside the sidebar, so its keys work with the sidebar hidden).
+# 5. Layout: a fresh clone of shipped `main` with the Limits panel and the invisible config-sync block
+# under Agents, spaces-plus for Spaces, and the invisible space-nav and space-guard blocks in the work
+# column (outside the sidebar: a hidden mod gets no keys, so theirs work with the sidebar hidden too).
 rm -f "$HOME_DIR/layouts/$LAYOUT.json"
 herdr-app do layout.clone "{\"name\":\"main\",\"as\":\"$LAYOUT\"}" >/dev/null
 f="$HOME_DIR/layouts/$LAYOUT.json"
@@ -74,14 +74,14 @@ jq --arg spaces "$SPACES_MOD" '
   | {"id":"config-sync","type":"block","content":{"mod":"config-sync"},"size":{"px":0}} as $c
   | walk(if type == "object" and (.children | type) == "array"
          then .children |= [.[] | select(.id != "agent-limits" and .id != "space-guard" and .id != "config-sync")
-                                | if .id == "agents" then ., $b, $g, $c else . end]
+                                | if .id == "agents" then ., $b, $c else . end]
          else . end)
   | walk(if type == "object" and .content?.mod? == "spaces" then .content.mod = $spaces else . end)
   | {"id":"space-nav","type":"block","content":{"mod":"space-nav"},"size":{"px":0}} as $n
-  | walk(if type == "object" and .id? == "work" then .children |= ([.[] | select(.id != "space-nav")] + [$n]) else . end)' "$f" >"$f.tmp"
+  | walk(if type == "object" and .id? == "work" then .children |= ([.[] | select(.id != "space-nav" and .id != "space-guard")] + [$n, $g]) else . end)' "$f" >"$f.tmp"
 mv "$f.tmp" "$f"
 grep -q '"agent-limits"' "$f" || { echo "no \"agents\" block found in $LAYOUT; add the Limits block by hand" >&2; exit 1; }
-grep -q '"space-nav"' "$f" || { echo "no \"work\" column found in $LAYOUT; add the space-nav block by hand" >&2; exit 1; }
+grep -q '"space-guard"' "$f" && grep -q '"space-nav"' "$f" || { echo "no \"work\" column found in $LAYOUT; add the space-nav and space-guard blocks by hand" >&2; exit 1; }
 
 # 6. Remember where this repo is and which "<Herdr version> <commit>" it applied (config-sync compares it),
 # then switch last: switching reloads the mods, and config-sync must already see this version.
