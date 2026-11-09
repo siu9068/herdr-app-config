@@ -77,6 +77,11 @@ METHODS = '''  // Keeps the groups, dropping closed spaces and removed groups.
     cx.notify();
   }
 
+  // Spaces hidden in folded groups, for space-nav's next/prev. Set only on a change: setting re-renders every mod.
+  shareFolded(ids) {
+    if (JSON.stringify(shared("spaces-plus.folded") ?? []) !== JSON.stringify(ids)) setShared("spaces-plus.folded", ids);
+  }
+
   // A space being dragged from this computer (only those go in groups).
   draggingLocal() {
     const s = this.pressed === null ? null : spaces().find((s) => s.id === this.pressed);
@@ -88,10 +93,11 @@ METHODS = '''  // Keeps the groups, dropping closed spaces and removed groups.
   byGroup(rows, t, collapsed, draw) {
     const g = this.groups;
     this.groupOf = null;
-    if (!g.on || collapsed) return rows.map(draw);
+    if (!g.on || collapsed) { this.shareFolded([]); return rows.map(draw); }
     const blocks = [];
     for (const r of rows) r.tree && blocks.length ? blocks[blocks.length - 1].push(r) : blocks.push([r]);
     const of = (b) => (g.list.includes(g.of[b[0].w.id]) ? g.of[b[0].w.id] : null);
+    this.shareFolded(blocks.filter((b) => g.folded.includes(of(b))).flat().map((r) => r.w.id));
     this.groupOf = {};
     for (const b of blocks) for (const r of b) this.groupOf[r.w.id] = of(b);
     const out = [];
@@ -160,7 +166,23 @@ METHODS = '''  // Keeps the groups, dropping closed spaces and removed groups.
 
 '''
 
+# In group mode, this computer's spaces get the sidebar's group order as their real order too, so
+# space.next/prev and ctrl-1..9 follow the sidebar. ordered()'s sync below then moves them there.
+ORDER = '''
+    const g = this.groups;
+    if (g.on) {
+      const blocks = [];
+      for (const r of out) r.tree && blocks.length ? blocks[blocks.length - 1].push(r) : blocks.push([r]);
+      const rank = (b) => (b[0].w.machine ? -1 : g.list.includes(g.of[b[0].w.id]) ? g.list.indexOf(g.of[b[0].w.id]) : g.list.length);
+      const local = blocks.filter((b) => rank(b) !== -1).sort((a, b) => rank(a) - rank(b));
+      out.splice(0, out.length, ...blocks.map((b) => (rank(b) === -1 ? b : local.shift())).flat());
+    }
+'''
+
 EDITS = [
+    # group order becomes the spaces' order
+    ('      kids.forEach((k, n) => out.push({ ...k, tree: n === kids.length - 1 ? "└─" : "├─" }));\n    }\n',
+     '      kids.forEach((k, n) => out.push({ ...k, tree: n === kids.length - 1 ? "└─" : "├─" }));\n    }' + ORDER),
     # imports
     ('import { v_flex, h_flex } from "gpui-base";',
      'import { v_flex, h_flex, InputState, Input } from "gpui-base";'),

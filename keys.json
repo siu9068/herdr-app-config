@@ -3,6 +3,8 @@
     "cmd-shift-n": "mod.open:agent-worktree",
     "cmd-d": "mod.open:agent-split-right",
     "cmd-shift-d": "mod.open:agent-split-down",
-    "cmd-shift-t": "space-guard.reopen"
+    "cmd-shift-t": "space-guard.reopen",
+    "cmd-alt-]": "space-nav.next",
+    "cmd-alt-[": "space-nav.prev"
   }
 }

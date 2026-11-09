@@ -62,7 +62,8 @@ else
 fi
 
 # 5. Layout: a fresh clone of shipped `main` with the Limits panel and the invisible space-guard and
-# config-sync blocks under Agents, and spaces-plus for Spaces.
+# config-sync blocks under Agents, spaces-plus for Spaces, and the invisible space-nav block in the work
+# column (outside the sidebar, so its keys work with the sidebar hidden).
 rm -f "$HOME_DIR/layouts/$LAYOUT.json"
 herdr-app do layout.clone "{\"name\":\"main\",\"as\":\"$LAYOUT\"}" >/dev/null
 f="$HOME_DIR/layouts/$LAYOUT.json"
@@ -75,9 +76,12 @@ jq --arg spaces "$SPACES_MOD" '
          then .children |= [.[] | select(.id != "agent-limits" and .id != "space-guard" and .id != "config-sync")
                                 | if .id == "agents" then ., $b, $g, $c else . end]
          else . end)
-  | walk(if type == "object" and .content?.mod? == "spaces" then .content.mod = $spaces else . end)' "$f" >"$f.tmp"
+  | walk(if type == "object" and .content?.mod? == "spaces" then .content.mod = $spaces else . end)
+  | {"id":"space-nav","type":"block","content":{"mod":"space-nav"},"size":{"px":0}} as $n
+  | walk(if type == "object" and .id? == "work" then .children |= ([.[] | select(.id != "space-nav")] + [$n]) else . end)' "$f" >"$f.tmp"
 mv "$f.tmp" "$f"
 grep -q '"agent-limits"' "$f" || { echo "no \"agents\" block found in $LAYOUT; add the Limits block by hand" >&2; exit 1; }
+grep -q '"space-nav"' "$f" || { echo "no \"work\" column found in $LAYOUT; add the space-nav block by hand" >&2; exit 1; }
 
 # 6. Remember where this repo is and which "<Herdr version> <commit>" it applied (config-sync compares it),
 # then switch last: switching reloads the mods, and config-sync must already see this version.
