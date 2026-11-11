@@ -8,8 +8,10 @@ import sys
 
 path = sys.argv[1]
 src = open(path).read()
-types = os.path.join(os.path.dirname(path), "gpui-kit.d.ts")
-if not os.path.exists(types) or not re.search(r"\bScrollHandle\b", open(types).read()):
+# The app's own copy (in the herdr-app home, two folders up): the clone writes its copy after main.js.
+here = os.path.dirname(os.path.abspath(path))
+types = [p for p in (os.path.join(here, "..", "..", "gpui-kit.d.ts"), os.path.join(here, "gpui-kit.d.ts")) if os.path.exists(p)]
+if not any(re.search(r"\bScrollHandle\b", open(p).read()) for p in types):
     print("spaces-plus scroll: this Herdr has no ScrollHandle (0.1.15+), skipped", file=sys.stderr)
     sys.exit(0)
 if "followActive" in src:
