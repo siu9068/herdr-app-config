@@ -1,6 +1,6 @@
 // Invisible layout block outside the sidebar, so its keys work with the sidebar hidden too.
 // "space-nav.next" / "space-nav.prev": like space.next/prev (sidebar order, wrapping around), skipping
-// spaces in folded groups. spaces-plus shares those ids as "spaces-plus.folded".
+// spaces in folded groups and under folded machines. spaces-plus shares those ids as "spaces-plus.folded".
 
 import { View, div } from "gpui-kit";
 import { spaces, run, shared, nextCommand } from "herdr";

@@ -77,7 +77,7 @@ METHODS = '''  // Keeps the groups, dropping closed spaces and removed groups.
     cx.notify();
   }
 
-  // Spaces hidden in folded groups, for space-nav's next/prev. Set only on a change: setting re-renders every mod.
+  // Spaces hidden in folded groups or under folded machines, for space-nav's next/prev. Set only on a change: setting re-renders every mod.
   shareFolded(ids) {
     if (JSON.stringify(shared("spaces-plus.folded") ?? []) !== JSON.stringify(ids)) setShared("spaces-plus.folded", ids);
   }
@@ -93,11 +93,11 @@ METHODS = '''  // Keeps the groups, dropping closed spaces and removed groups.
   byGroup(rows, t, collapsed, draw) {
     const g = this.groups;
     this.groupOf = null;
-    if (!g.on || collapsed) { this.shareFolded([]); return rows.map(draw); }
+    if (!g.on || collapsed) return rows.map(draw);
     const blocks = [];
     for (const r of rows) r.tree && blocks.length ? blocks[blocks.length - 1].push(r) : blocks.push([r]);
     const of = (b) => (g.list.includes(g.of[b[0].w.id]) ? g.of[b[0].w.id] : null);
-    this.shareFolded(blocks.filter((b) => g.folded.includes(of(b))).flat().map((r) => r.w.id));
+    this.groupFolded = blocks.filter((b) => g.folded.includes(of(b))).flat().map((r) => r.w.id);
     this.groupOf = {};
     for (const b of blocks) for (const r of b) this.groupOf[r.w.id] = of(b);
     const out = [];
@@ -191,11 +191,21 @@ EDITS = [
     # group state
     ('    this.folded = new Set(JSON.parse(localStorage.getItem("machines.folded") ?? "[]"));',
      '    this.folded = new Set(JSON.parse(localStorage.getItem("machines.folded") ?? "[]"));' + INIT),
-    # this computer's rows go through byGroup, alone or under its machine header
-    ('return loading(null) && !rows.length ? [loadingRow(null)] : rows.map(draw);',
-     'return loading(null) && !rows.length ? [loadingRow(null)] : this.byGroup(rows, t, collapsed, draw);'),
-    ('mine.length ? mine.map(draw) :',
-     'mine.length ? (m ? mine.map(draw) : this.byGroup(mine, t, collapsed, draw)) :'),
+    # this computer's rows go through byGroup, alone or under its machine header; once all rows are
+    # drawn, the spaces hidden in folded groups or under folded machines go to space-nav
+    ('    if (!remote.length) return loading(null) && !rows.length ? [loadingRow(null)] : rows.map(draw);',
+     '    this.groupFolded = [];\n'
+     '    if (!remote.length) {\n'
+     '      const out = loading(null) && !rows.length ? [loadingRow(null)] : this.byGroup(rows, t, collapsed, draw);\n'
+     '      this.shareFolded(this.groupFolded);\n'
+     '      return out;\n'
+     '    }'),
+    ('    return machineNames.flatMap((m) => {',
+     '    const out = machineNames.flatMap((m) => {'),
+    ('mine.length ? mine.map(draw) : [loading(m) ? loadingRow(m) : cell(empty)])];\n    });\n',
+     'mine.length ? (m ? mine.map(draw) : this.byGroup(mine, t, collapsed, draw)) : [loading(m) ? loadingRow(m) : cell(empty)])];\n    });\n'
+     '    this.shareFolded([...this.groupFolded, ...rows.filter((r) => this.folded.has(r.w.machine ?? null)).map((r) => r.w.id)]);\n'
+     '    return out;\n'),
     # dragging over a row leaves any group header
     ('        if (this.pressed !== null && this.over !== over) {',
      '        if (this.pressed !== null && this.overGroup !== undefined) { this.overGroup = undefined; cx.notify(); }\n'
