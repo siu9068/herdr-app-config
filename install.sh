@@ -9,6 +9,8 @@ REPO=$(cd "$(dirname "$0")" && pwd)
 HOME_DIR=${HERDR_APP_HOME:-$HOME/.config/herdr-app}
 LAYOUT=main-limits
 STATE=$HOME/.local/state/herdr-app-config
+# off: the Spaces sidebar no longer scrolls to the current space (patches/spaces-plus-scroll.py).
+SPACES_SCROLL=on
 
 command -v herdr-app >/dev/null || { echo "herdr-app not found; install Herdr first" >&2; exit 1; }
 command -v jq >/dev/null || { echo "jq not found" >&2; exit 1; }
@@ -46,6 +48,7 @@ rm -rf "$HOME_DIR/mods/spaces-plus-new"
 herdr-app do mod.clone '{"name":"spaces","as":"spaces-plus-new"}' >/dev/null
 if wait_for "$HOME_DIR/mods/spaces-plus-new/main.js" &&
   python3 "$REPO/patches/spaces-plus.py" "$HOME_DIR/mods/spaces-plus-new/main.js" &&
+  { [ "$SPACES_SCROLL" = off ] || python3 "$REPO/patches/spaces-plus-scroll.py" "$HOME_DIR/mods/spaces-plus-new/main.js"; } &&
   herdr-app check "$HOME_DIR/mods/spaces-plus-new"; then
   # The clone rewrote its own asset prefix; point it at the final name.
   sed -i '' 's#mods/spaces-plus-new/#mods/spaces-plus/#g' "$HOME_DIR/mods/spaces-plus-new/main.js"
